@@ -1,50 +1,128 @@
-# React + TypeScript + Vite
+## 实现React Playground
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### 1.布局：allotment包实现两边区域的变化
 
-Currently, two official plugins are available:
+```html
+<div class="div">
+    <span>xxxxxx</span>
+	<img src="xxxxx"/>
+</div>
+	// 行内元素对齐
+.div{
+	display:inline-flex;
+	place-items:center;
+}
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### 2.集成@monaco-editor/react实现编辑器
 
-- Configure the top-level `parserOptions` property like this:
+#### 问题1:解决如何解析JSX代码，并可以利用editor的action做一些快捷键操作
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
+```tsx
+import { ReactNode } from "react";
+import MonacoEditor, { OnMount } from "@monaco-editor/react";
+
+
+export default function EditorComponent(): ReactNode {
+   // 默认不会解析JSX，需要在编辑器加载完成后，设置其ts的compilerOptions
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
+      // editor.getSupportedAction可以查看editor支持的行为
+    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+      // 这里设置 jsx 为 preserve，也就是输入 \<div> 输出 \<div>，保留原样。
+      // 如果设置为 react 会输出 React.createElement("div")。            	                           
+      jsx: monaco.languages.typescript.JsxEmit.Preserve,  
+
+	 // 自动给没有default的包加上default
+      esModuleInterop: true,
+    });
+  };
+
+  const code = `export default function EditorComponent() {
+    return <div>xxxxxx</div>;
+  }`;
+  return (
+    <MonacoEditor
+      height="100%"
+      defaultValue="// some comment"
+      path="guang.tsx"
+      language={"typescript"}
+      value={code}
+      options={{
+        // 缩略图默认为true
+        minimap: {
+          enabled: false,
+        },
+        fontSize: 12,
+        // 隐藏滚动条
+        scrollbar: {
+          vertical: "hidden",
+        },
+      }}
+      onMount={handleEditorDidMount}
+    />
+  );
+}
+
+```
+
+#### 问题2：使用@typescript/ata 包实现了代码改变时自动下载 dts 类型包的功能,解决第三方包的ts提示
+
+```tsx
+// 下载这个包时需要停掉项目,依赖es-build 
+// pnpm i @typescript/ata --save -f
+import { setupTypeAcquisition } from "@typescript/ata";  
+import typescript from "typescript";
+
+export function createATA(
+  onDownloadFile: (code: string, path: string) => void
+) {
+  const ata = setupTypeAcquisition({
+    projectName: "my-ata",
+    typescript: typescript,
+    logger: console,
+    delegate: {
+      receivedFile: (code: string, path: string) => {
+        console.log("自动下载的包", path);
+        onDownloadFile(code, path);
+      },
     },
-  },
-})
+  });
+
+  return ata;
+}
+
+// 在Editor加载完成后添加解析第三包的代码并下载
+ const handleEditorDidMount: OnMount = (editor, monaco) => {
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ, () => {
+      editor.getAction("editor.action.formatDocument")?.run();
+    });
+
+    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+      jsx: monaco.languages.typescript.JsxEmit.Preserve,
+      esModuleInterop: true,
+    });
+
+    // 自动下载依赖
+    const ata = createATA((code, path) => {
+      monaco.languages.typescript.typescriptDefaults.addExtraLib(
+        code,
+        `file://${path}`
+      );
+    });
+
+    editor.onDidChangeModelContent(() => {
+      ata(editor.getValue());
+    });
+
+    ata(editor.getValue());
+  };
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+### 
+
+### 3.import文件: 
+
