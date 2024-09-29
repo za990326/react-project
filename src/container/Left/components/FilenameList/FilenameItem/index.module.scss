@@ -1,0 +1,11 @@
+.filenameItem {
+  font-size: 13px;
+  line-height: 20px;
+  height: 20px;
+  cursor: pointer;
+  padding: 8px 10px 6px;
+  &.selected {
+    color: #42b883;
+    border-bottom: 2px solid #42b883;
+  }
+}

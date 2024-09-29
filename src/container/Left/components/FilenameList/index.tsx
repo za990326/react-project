@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { PlaygroundContext } from "../../../../PlayGroundContext";
-
+import FilenameItem from "./FilenameItem";
+import styles from "./index.module.scss";
 export default function FilenameList() {
   const {
     files,
@@ -18,12 +19,15 @@ export default function FilenameList() {
   }, [files]);
 
   return (
-    <div>
+    <div className={styles.filenameList}>
       {tabs.map((item, index) => {
         return (
-          <div key={index} onClick={() => setSelectedFileName(item)}>
-            {item}
-          </div>
+          <FilenameItem
+            key={item + index}
+            name={item}
+            selected={selectedFileName === item}
+            onClick={() => setSelectedFileName(item)}
+          ></FilenameItem>
         );
       })}
     </div>
