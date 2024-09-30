@@ -44,7 +44,7 @@ export default function EditorComponent(props: Props) {
 
   return (
     <MonacoEditor
-      height="100%"
+      height="90%"
       defaultValue="// some comment"
       path={file.name}
       language={file.language}

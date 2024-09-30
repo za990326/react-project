@@ -1,5 +1,11 @@
 .filenameList {
-  display: flex;
+  display: inline-flex;
   border-bottom: 1px solid #e0e0e0;
   white-space: nowrap;
+  align-items: center;
+  background-color: var(--bg);
+  color: var(--text);
+  .add {
+    cursor: pointer;
+  }
 }

@@ -3,6 +3,14 @@ import iframeRaw from "./iframe.html?raw";
 import { PlaygroundContext } from "../../PlayGroundContext";
 import { compiler } from "./compiler";
 import { IMPORT_MAP_FILE_NAME } from "../../utils/file";
+import { Message } from "../Message";
+
+interface MessageData {
+  data: {
+    type: string;
+    message: string;
+  };
+}
 
 export default function Right(): ReactNode {
   const getIframeUrl = () => {
@@ -21,6 +29,21 @@ export default function Right(): ReactNode {
   const { files } = useContext(PlaygroundContext);
   const [compiledCode, setCompiledCode] = useState("");
   const [iframeUrl, setIframeUrl] = useState(getIframeUrl());
+
+  const [error, setError] = useState("");
+  const handleMessage = (e: MessageData) => {
+    const { type, message } = e.data;
+    if (type === "ERROR") {
+      setError(message);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
 
   useEffect(() => {
     const res = compiler(files);
@@ -42,6 +65,7 @@ export default function Right(): ReactNode {
           border: "none",
         }}
       />
+      <Message type="error" content={error} />
       {/* <Editor file={{
           name: 'dist.js',
           value: compiledCode,

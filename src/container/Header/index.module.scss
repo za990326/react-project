@@ -3,13 +3,20 @@
   height: 50px;
   padding: 0 20px;
   border-bottom: 1px solid #000;
-  display: inline-flex;
-  place-items: center;
-  img {
-    height: 24px;
-    margin-right: 10px;
-  }
-  span {
-    font-weight: 500;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  justify-content: space-between;
+  background-color: var(--bg);
+  color: var(--text);
+  .logo {
+    display: inline-flex;
+    img {
+      height: 24px;
+      margin-right: 10px;
+    }
+    span {
+      font-weight: 500;
+    }
   }
 }
