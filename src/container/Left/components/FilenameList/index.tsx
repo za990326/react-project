@@ -18,6 +18,14 @@ export default function FilenameList() {
     setTabs(Object.keys(files));
   }, [files]);
 
+  const handleEditComplete = (name: string, oldName: string) => {
+    if (name === oldName) {
+      return;
+    }
+    updateFileName(oldName, name);
+    setSelectedFileName(name);
+  };
+
   return (
     <div className={styles.filenameList}>
       {tabs.map((item, index) => {
@@ -27,6 +35,7 @@ export default function FilenameList() {
             name={item}
             selected={selectedFileName === item}
             onClick={() => setSelectedFileName(item)}
+            onEditComplete={(name: string) => handleEditComplete(name, item)}
           ></FilenameItem>
         );
       })}

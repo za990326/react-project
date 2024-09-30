@@ -1,13 +1,18 @@
-import React, { ReactNode, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import cs from "classnames";
 import styles from "./index.module.scss";
 
-export default function FilenameItem(props: {
+interface FilenameItemProps {
   name: string;
   selected: boolean;
   onClick: () => void;
-}): ReactNode {
-  const { name, selected, onClick } = props;
+  onEditComplete: (name: string) => void;
+}
+
+const FilenameItem: React.FC<FilenameItemProps> = (
+  props: FilenameItemProps
+) => {
+  const { name, selected, onClick, onEditComplete } = props;
   // 是否编辑
   const [value, setValue] = useState(name);
   const [editing, setEditing] = useState(false);
@@ -15,7 +20,13 @@ export default function FilenameItem(props: {
   const inputRef = useRef<HTMLInputElement>(null);
   const doubleClickHandle = () => {
     setEditing(true);
-    inputRef.current?.focus();
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  };
+  const blurHandle = () => {
+    setEditing(false);
+    onEditComplete(value);
   };
 
   return (
@@ -25,9 +36,10 @@ export default function FilenameItem(props: {
     >
       {editing ? (
         <input
+          className={styles.filenameInput}
           value={value}
           ref={inputRef}
-          onBlur={() => setEditing(false)}
+          onBlur={blurHandle}
           onChange={(e) => setValue(e.target.value)}
         />
       ) : (
@@ -35,4 +47,6 @@ export default function FilenameItem(props: {
       )}
     </div>
   );
-}
+};
+
+export default FilenameItem;
